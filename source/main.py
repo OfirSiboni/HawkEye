@@ -47,6 +47,8 @@ def processor(pic,contours, pipeline, prolonged):
 	pass
 def error(exception, pipeline):
 	pass
+def process_Init(gripFile,CameraServer,capNumber,pipeline):
+        pass
 
 try:
 	with open(__config_path__ + '/config.json', 'r') as file:
@@ -107,12 +109,28 @@ except Exception as e:
 
 def get_video(index, image):
 	return camera_server.getVideo(camera=cameras[index]).grabFrame(image)[1]
+def process_Init(gripFile,CameraServer,capNumber,pipeline):
+    grip_pipe = eval('GripPipeline()') #TODO: check
+    _img_ = get_video(cupNumber,_img_)
+    grip_pipe.process(_img_)
+    _img_ = grip_pipe.rgb_threshold_output
+    height, width, channels = _img_.shape
+    CameraServer.putvideo('validation', width, height).putFrame(_img_)
+    
+
 
 __image__ = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
+__index__ = int(__pipeline__.getNumber('cap_number', -1))
 counter = 0
+try:
+        for x in range(1,4):
+                process_Init(open(__config_path__ + '/pipelines' + (x*'i')),camera_server,__index__,pipeline)
+                
+except Exception as e:
+        error(e,__pipeline__)
 while True:
 	try:
-		__index__ = int(__pipeline__.getNumber('cap_number', -1))
+                __index__ = int(__pipeline__.getNumber('cap_number', -1))
 		if __index__ != -1:
 			__image__ = get_video(__index__, __image__)
 			grip_pipe.process(__image__)
