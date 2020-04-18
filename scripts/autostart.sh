@@ -1,2 +1,2 @@
 sleep 3
-python3 -u /root/hawk-vision/source/main.py > /root/.hawklog
+python3 -u /home/ofirsiboni/HawkEye/HawkEye/source/main.py > /root/.hawklog
