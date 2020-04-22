@@ -1,0 +1,1 @@
+python3 -c'import main;main.prev_click()'
