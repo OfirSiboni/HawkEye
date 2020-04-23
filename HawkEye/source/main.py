@@ -72,7 +72,12 @@ NetworkTables.initialize()
 camera_server = CameraServer.getInstance()
 
 #get all valid caps
+#os.system("v4l2-ctl -c exposure=6")
+#os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
 cap1 = cv2.VideoCapture(-1)
+cap1.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+cap1.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+cap1.set(cv2.CAP_PROP_EXPOSURE,6)
 def __get_ports__():
   ports = []
   cap = cv2.VideoCapture(-1) 
@@ -144,12 +149,13 @@ def process_Init(index):
                 grip_pipe = eval('GripPipeline()')
           #get image from original stream
           pic = cap1.read()[1]
+          cv2.cvtColor(pic,84)
           #process and get rgb threshold
           grip_pipe.process(pic)
           pic = grip_pipe.rgb_threshold_output
           #publish to a new stream
           source.putFrame(pic)
-          print("config running for " + str(time.time() - s_time) + " seconds",end='\r')
+          print("config running for " + str(round(time.time() - s_time,1)) + " seconds",end='\r')
         except Exception as e:
           print(e)
       
