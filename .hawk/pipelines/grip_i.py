@@ -67,7 +67,7 @@ class GripPipline:
         Returns:
             A black and white numpy.ndarray.
         """
-        out = cv2.cvtColor(input, cv2.COLOR_BGR2RGB)
+        out = cv2.cvtColor(input, cv2.COLOR_BGR2YUV)
         return cv2.inRange(out, (red[0], green[0], blue[0]),  (red[1], green[1], blue[1]))
 
     @staticmethod
