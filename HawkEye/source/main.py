@@ -142,6 +142,8 @@ def process_Init():
           #update vars
           try:
             data = s.recvfrom(1024)[0] 
+            encoding = 'utf-8'
+            data = data.decode(encoding)
             changed_vals(data)
           except Exception as e:
             print("no data recieved",end='\r')
@@ -175,36 +177,28 @@ def process_Init():
             source.putFrame(pic)
             #print("config running for " + str(round(time.time() - s_time,1)) + " seconds",end='\r')
             if prev or nex or conf or pt or done:
-              print(str(prev) + ' ' + str(nex) + ' ' + str(conf) + ' ' + str(pt) + ' ' + str(done))#,end='\r')
+              print(str(prev) + ' ' + str(nex) + ' ' + str(conf) + ' ' + str(pt) + ' ' + str(done))
         except Exception as e:
           print(e)
 #TODO: find a better solution!!
 def changed_vals(val):
-  global prev,nex,conf,pt,done
-  print(val)
-  val = str(val)
+  print('\n' + val)
   if not val: return
-  if val == "b'PREV'":
+  global prev,nex,conf,pt,done
+  if val == "PREV":
     prev = True
     return
-  if val == "b'NEX'a":
+  if val == "NEX":
     nex = True
     return
-  if val == "b'SET_CONF'":
+  if val == "SET_CONF":
     conf = True
     return
-  if val == "b'ADD_PT'":
+  if val == "ADD_PT":
     pt = True
-  done = "b'DONE'"
-  if val == done:
-    Done = True #will get here only if nothing left
-# Disable
-def blockPrint():
-    sys.stdout = open(os.devnull, 'w')
-
-# Restore
-def enablePrint():
-    sys.stdout = sys.__stdout__
+  if val == "DONE":
+    Done = True 
+  
 if __name__ == "__main__":
   process_Init()
                   
