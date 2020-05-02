@@ -127,8 +127,10 @@ def get_video(index, image):
   return camera_server.getVideo(camera=cameras[index]).grabFrame(image)[1]
 s.settimeout(0.01)
 def process_Init():
+    global prev,nex,conf,pt,done
+    #prev,nex,conf,pt,done = False,False,False,False,False
     s_time = time.time()
-    counter,prev = 1,1
+    counter = 1
     source = cscore.CvSource("conf_stream",cscore.VideoMode(cscore.VideoMode.PixelFormat(cscore.VideoMode.PixelFormat.kMJPEG),width,height,fps))
     server = cscore.MjpegServer(name="conf_stream",port=1191)
     server.setSource(source)
@@ -139,12 +141,14 @@ def process_Init():
         try:
           #update vars
           try:
-            #blockPrint()
-            data = s.recvfrom(20)[0] 
+            data = s.recvfrom(1024)[0] 
             changed_vals(data)
-            #enablePrint()
+          except Exception as e:
+            print("no data recieved",end='\r')
           finally:
+            #global prev,nex,conf,pt,done
             if not conf:
+              conf = False
             #adjust prev/next
               if prev:
                 prev = False
@@ -156,30 +160,34 @@ def process_Init():
                 counter += 1
                 if counter > 4:
                   counter = 4
-              #input("Press Enter to continue...") 
+              #TODO: add pt add 
               if prev or nex:
                   with open("/root/.hawk/pipelines/grip_" + (counter * 'i') + '.py') as grip_file:
                     exec("".join(i for i in grip_file.readlines()))
                     grip_pipe = eval('GripPipeline()')
-            #get image from original stream
+            ##get image from original 
             pic = cap1.read()[1]
             cv2.cvtColor(pic,84)
-            #process and get rgb threshold
+            ##process and get rgb threshold
             grip_pipe.process(pic)
             pic = grip_pipe.rgb_threshold_output
-            #publish to a new stream
+            ##publish to a new stream
             source.putFrame(pic)
-            print("config running for " + str(round(time.time() - s_time,1)) + " seconds",end='\r')
+            #print("config running for " + str(round(time.time() - s_time,1)) + " seconds",end='\r')
+            if prev or nex or conf or pt or done:
+              print(str(prev) + ' ' + str(nex) + ' ' + str(conf) + ' ' + str(pt) + ' ' + str(done))#,end='\r')
         except Exception as e:
           print(e)
 #TODO: find a better solution!!
 def changed_vals(val):
+  global prev,nex,conf,pt,done
   print(val)
+  val = str(val)
   if not val: return
   if val == "b'PREV'":
     prev = True
     return
-  if val == "b'NEX'":
+  if val == "b'NEX'a":
     nex = True
     return
   if val == "b'SET_CONF'":
@@ -187,8 +195,9 @@ def changed_vals(val):
     return
   if val == "b'ADD_PT'":
     pt = True
-    return
-  Done = True #will get here only if nothing left
+  done = "b'DONE'"
+  if val == done:
+    Done = True #will get here only if nothing left
 # Disable
 def blockPrint():
     sys.stdout = open(os.devnull, 'w')
@@ -199,7 +208,6 @@ def enablePrint():
 if __name__ == "__main__":
   process_Init()
                   
-  input("Press Enter to continue...")
   while True:
     try:
                   __index__ = int(__pipeline__.getNumber('cap_number', 1))
