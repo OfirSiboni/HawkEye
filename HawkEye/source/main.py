@@ -30,7 +30,7 @@ import cv2
 import subprocess
 from PIL import Image
 import time
-import hawklib
+from threading import Thread
 from hawklib import *
 sys.path.append(os.path.expanduser("~/.hawk/scripts/"))
 
@@ -47,24 +47,6 @@ prev,nex,conf,pt,done = False,False,False,False,False
 #paths
 __config_path__ = os.path.expanduser('~') + '/.hawk'
 
-def processor(pic,contours, pipeline, prolonged):
-  pass
-def error(exception, pipeline):
-  pass
-
-
-try:
-  with open(__config_path__ + '/config.json', 'r') as file:
-    config = json.loads(file.read())
-    team_number = config['team_number']
-    width = config['width']
-    height = config['height']
-    fps = config['fps']
-    __pipe_name__ = config['pipe_name']
-except Exception as e:
-  print("Error loading config")
-  print(e)
-
 #networking
 __instance__ = NetworkTablesInstance.getDefault()
 __instance__.startClientTeam(team_number)
@@ -75,26 +57,29 @@ HOST = socket.gethostname()
 TCP_IP = socket.gethostbyname(HOST)
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind((TCP_IP, 5000))
-if __name__ == "__main__":
+#if __name__ == "__main__":
   #get all valid caps
-  #os.system("v4l2-ctl -c exposure=6")
-  #os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
-  cap1 = cv2.VideoCapture(-1)
-  cap1.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
-  cap1.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-  cap1.set(cv2.CAP_PROP_EXPOSURE,6)
+  #cap1 = cv2.VideoCapture(-1)
+  #cap1.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+  #cap1.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+  #cap1.set(cv2.CAP_PROP_EXPOSURE,6)
+
+
+#region funcrions
+def processor(pic,contours, pipeline, prolonged):
+  pass
+def error(exception, pipeline):
+  pass
 def __get_ports__():
-  ports = []
-  cap = cv2.VideoCapture(-1) 
-  if cap.read()[0]:
-      cap.release()
-      ports.append(0)
-  else:
-      cap.release()
-  return ports
-
-#get video for cameras and apply settings
-
+	ports = []
+	for i in range(0, 100):
+		cap = cv2.VideoCapture(i)
+		if cap.read()[0]:
+			cap.release()
+			ports.append(i)
+		else:
+			cap.release()
+	return ports
 def __get_cap__(id, index):
   _camera_ = camera_server.startAutomaticCapture(dev=id, return_server=False)
   try:
@@ -106,26 +91,8 @@ def __get_cap__(id, index):
   _camera_.setFPS(fps)
   _camera_.setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
   return _camera_
-if __name__ == "__main__":
-  for index, id in enumerate(__get_ports__()):
-    cameras.append(__get_cap__(id, index))
-
-  __index__ = int(__pipeline__.getNumber('cap_number', 1))
-  __image__ = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
-  try:
-    #loads grip pipeline and user script
-    with open(__config_path__ + '/grips/' + config['grip_file']) as grip_file:
-      exec("".join(i for i in grip_file.readlines()))
-      grip_pipe = eval('GripPipeline()')
-    with open(__config_path__ + '/scripts/' + config['script_file']) as script_file:
-      exec("".join(i for i in script_file.readlines())) 
-  except Exception as e:
-    print("error loading grip file or user script")
-    print(e)
-
 def get_video(index, image):
   return camera_server.getVideo(camera=cameras[index]).grabFrame(image)[1]
-s.settimeout(0.01)
 def process_Init():
     global prev,nex,conf,pt,done
     #prev,nex,conf,pt,done = False,False,False,False,False
@@ -148,7 +115,6 @@ def process_Init():
           except Exception as e:
             print("no data recieved",end='\r')
           finally:
-            #global prev,nex,conf,pt,done
             if not conf:
               conf = False
             #adjust prev/next
@@ -167,6 +133,7 @@ def process_Init():
                   with open("/root/.hawk/pipelines/grip_" + (counter * 'i') + '.py') as grip_file:
                     exec("".join(i for i in grip_file.readlines()))
                     grip_pipe = eval('GripPipeline()')
+                    input("here")
             ##get image from original 
             pic = cap1.read()[1]
             cv2.cvtColor(pic,84)
@@ -175,12 +142,10 @@ def process_Init():
             pic = grip_pipe.rgb_threshold_output
             ##publish to a new stream
             source.putFrame(pic)
-            #print("config running for " + str(round(time.time() - s_time,1)) + " seconds",end='\r')
             if prev or nex or conf or pt or done:
               print(str(prev) + ' ' + str(nex) + ' ' + str(conf) + ' ' + str(pt) + ' ' + str(done))
         except Exception as e:
           print(e)
-#TODO: find a better solution!!
 def changed_vals(val):
   print('\n' + val)
   if not val: return
@@ -196,18 +161,59 @@ def changed_vals(val):
     return
   if val == "ADD_PT":
     pt = True
+    return
   if val == "DONE":
-    Done = True 
-  
+    Done = True
+    return
+def checkProcessInit():
+  s.settimeout(0.01)
+  data = s.recvfrom(1024)[0] 
+  encoding = 'utf-8'
+  data = data.decode(encoding)
+  if data == "START":
+    process_Init()
+#endregion
+
+os.system("v4l2-ctl -c exposure=6")
+os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
+
+
+try:
+  with open(__config_path__ + '/config.json', 'r') as file:
+    config = json.loads(file.read())
+    team_number = config['team_number']
+    width = config['width']
+    height = config['height']
+    fps = config['fps']
+    __pipe_name__ = config['pipe_name']
+except Exception as e:
+  print("Error loading config")
+  print(e)
+
 if __name__ == "__main__":
-  process_Init()
-                  
+  for index, id in enumerate(__get_ports__()):
+    cameras.append(__get_cap__(id, index))
+  cameras[0].setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
+
+
+  __index__ = int(__pipeline__.getNumber('cap_number', 1))
+  __image__ = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
+  try:
+    #loads grip pipeline and user script
+    with open(__config_path__ + '/grips/' + config['grip_file']) as grip_file:
+      exec("".join(i for i in grip_file.readlines()))
+      grip_pipe = eval('GripPipeline()')
+    with open(__config_path__ + '/scripts/' + config['script_file']) as script_file:
+      exec("".join(i for i in script_file.readlines())) 
+  except Exception as e:
+    print("error loading grip file or user script")
+    print(e)
+
+  #start check for process init start    
   while True:
     try:
-                  __index__ = int(__pipeline__.getNumber('cap_number', 1))
-                  
-                  if __index__ != -1:
-                          
+                  __index__ = int(__pipeline__.getNumber('cap_number', 1))                  
+                  if __index__ != -1:   
                           __image__ = get_video(__index__, __image__)
                           grip_pipe.process(__image__)
                           counter = counter + 1 #change r u fucking dumb
