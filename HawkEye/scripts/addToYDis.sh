@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo $1 >> ~/.hawk/databases/ydis.csv
+echo $1 >> ~/.hawk/databases/ydis.txt

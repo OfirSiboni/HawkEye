@@ -46,7 +46,9 @@ grip_pipe = None
 prev,nex,conf,pt,done = False,False,False,False,False
 #paths
 __config_path__ = os.path.expanduser('~') + '/.hawk'
-
+# PSEYE camera settings
+os.system("v4l2-ctl -c exposure=6")
+os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
 #networking
 __instance__ = NetworkTablesInstance.getDefault()
 __instance__.startClientTeam(team_number)
@@ -57,13 +59,6 @@ HOST = socket.gethostname()
 TCP_IP = socket.gethostbyname(HOST)
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind((TCP_IP, 5000))
-#if __name__ == "__main__":
-  #get all valid caps
-  #cap1 = cv2.VideoCapture(-1)
-  #cap1.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
-  #cap1.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-  #cap1.set(cv2.CAP_PROP_EXPOSURE,6)
-
 
 #region funcrions
 def processor(pic,contours, pipeline, prolonged):
@@ -95,7 +90,7 @@ def get_video(index, image):
   return camera_server.getVideo(camera=cameras[index]).grabFrame(image)[1]
 def process_Init():
     global prev,nex,conf,pt,done
-    #prev,nex,conf,pt,done = False,False,False,False,False
+    
     s_time = time.time()
     counter = 1
     source = cscore.CvSource("conf_stream",cscore.VideoMode(cscore.VideoMode.PixelFormat(cscore.VideoMode.PixelFormat.kMJPEG),width,height,fps))
@@ -174,8 +169,6 @@ def checkProcessInit():
     process_Init()
 #endregion
 
-os.system("v4l2-ctl -c exposure=6")
-os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
 
 
 try:
@@ -212,14 +205,11 @@ if __name__ == "__main__":
   #start check for process init start    
   while True:
     try:
-                  __index__ = int(__pipeline__.getNumber('cap_number', 1))                  
+                  __index__ = int(__pipeline__.getNumber('cap_number', 1)) #when connected to a robot, change 1 to -1        
                   if __index__ != -1:   
                           __image__ = get_video(__index__, __image__)
                           grip_pipe.process(__image__)
-                          counter = counter + 1 #change r u fucking dumb
-                  processor(image, grip_pipe.filter_contours_output or [], (counter > 10))
-                  if counter > 10:
-                            counter = 0
+                  processor(image, grip_pipe.filter_contours_output or [])
     except Exception as e:
                   error(e, __pipeline__)
 

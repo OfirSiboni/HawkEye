@@ -16,8 +16,8 @@ def X(y, pipeline):#compute the linear inverse graph
   else:
     return 0
 
-	
-def processor(pic,contours, pipeline, prolonged):
+prev_perimeter , err , counter = 0 , 10 , 0
+def processor(pic,contours, pipeline):
   contours.sort(key=lambda contour: -contour_area(contour))
 
   selected = contours[0]
@@ -39,15 +39,17 @@ def processor(pic,contours, pipeline, prolonged):
 
   #send to file
   try:
-    if prolonged:
+    if prev_perimeter - err <= contour_perimeter(selected) <= prev_perimeter + err: counter+=1
+    if counter >= 10:
+      counter = 0
       color = pic[int(data[0]),int(data[1])]
       color = colorsys.rgb_to_hsv(color)
-      subprocess.check_call("/scripts/addToHSV.sh " + str(str(color[0]) + ", " + str(color[1]) + ", " + str(color[2])),   shell=True)
-      subprocess.check_call("/scripts/adToYDis.sh " + str(y)) #TODO: EDIT LATER TO y - Dis
+      subprocess.check_call("~/HawkEye/scripts/addToHSV.sh " + str(str(color[0]) + ", " + str(color[1]) + ", " + str(color[2])),   shell=True)
+      subprocess.check_call("~/HawkEye/scripts/adToYDis.sh " + str(y)) #TODO: EDIT LATER TO y - Dis
                       
   except Exception as e:
     error(e,pipeline)
-  '''
+  ''' cause problem in debugging
 	  pipeline.putNumber("AX", x) #send the absolute X of the shape
 	  pipeline.putNumber("AY", y) #send the absolute Y of the shape
   	pipeline.putNumber("area", area) #send area
