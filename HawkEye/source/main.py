@@ -128,7 +128,6 @@ def process_Init():
                   with open("/root/.hawk/pipelines/grip_" + (counter * 'i') + '.py') as grip_file:
                     exec("".join(i for i in grip_file.readlines()))
                     grip_pipe = eval('GripPipeline()')
-                    input("here")
             ##get image from original 
             pic = cap1.read()[1]
             cv2.cvtColor(pic,84)

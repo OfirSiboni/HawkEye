@@ -38,11 +38,11 @@ class GripPipeline:
 
         self.filter_contours_output = None
 
-    def setHSV(H,S,V):
+    def setHSV(self,H,S,V):
         self.__hsv_threshold_hue = H
         self.__hsv_threshold_saturation = S
         self.__hsv_threshold_value = V
-    def getHSV():
+    def getHSV(self):
         return  self.__hsv_threshold_hue + self.__hsv_threshold_saturation + self.__hsv_threshold_value
     def process(self, source0):
         """
