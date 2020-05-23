@@ -1,11 +1,11 @@
 import subprocess
 import colorsys
+from smbus2 import SMBus, ic_msg
 FOCAL_LENGTH_X = 208.51606 # the focal constant
 FOCAL_LENGTH_Y = 258.81351
 
 os.system("v4l2-ctl -c exposure=6") 
 cameras[0].setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
-
 #x = (y-y1)/m+x1
 def X(y, pipeline):#compute the linear inverse graph
   CY = pipeline.getNumberArray("CY", [])
@@ -49,7 +49,7 @@ def processor(pic,contours, pipeline):
                       
   except Exception as e:
     error(e,pipeline)
-  ''' cause problem in debugging
+  #cause problem in debugging
 	  pipeline.putNumber("AX", x) #send the absolute X of the shape
 	  pipeline.putNumber("AY", y) #send the absolute Y of the shape
   	pipeline.putNumber("area", area) #send area
@@ -57,7 +57,9 @@ def processor(pic,contours, pipeline):
 	  pipeline.putNumber("angle", angle)
 	  pipeline.putNumber("pitch", pitch)
     	__instance__.flush()
-  '''
+    with SMBus(1) as bus:
+      msg = i2c_msg.write(80,[x,y,angle]) #you can send more data, add it to the array(more data -> solwer)
+      bus.i2c_rdwr(msg)
 	
 
 def error(exception, pipeline):

@@ -65,3 +65,5 @@ except Exception as e:
     print(e)
 
 
+def getVals():
+    print(f'{_minHue_}  {_maxHue_}  {_minSat_}  {_maxSat_}  {_minSat_}  {_maxSat_}  {_minVal_}  {_maxVal_}')
