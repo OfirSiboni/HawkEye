@@ -13,7 +13,7 @@ To get started, you need to have these requirements:
 
 ## Installation instructions
   1. Install Raspbian latest version - can be found [here](https://www.raspberrypi.org/downloads/raspbian/).
-  2. Install all the require pip packages(a completed list of the requirements will be posted later)
+  2. Install all the [require pip packages](requirements.txt)
   3. fetch the last version of HawkEYE(NOTE: if there is still no public version, you can download the last commit)
   4. Download the last version of [HawkEYE Client For Windows](https://github.com/OfirSiboni/HawkEYE-Client/releases) for your computer.
   5. You are done! you can run HawkEYE freely and change it for your use. Run using `python3 ~/HawkEYE/source/main.py`
