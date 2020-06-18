@@ -1,23 +1,4 @@
 #!/usr/bin/python3
-
-'''
-This file is part of Hawk.
-
-    Hawk is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    Hawk is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Hawk.  If not, see <https://www.gnu.org/licenses/>.
-
-'''
-
 import sys
 import os
 import json
@@ -32,39 +13,10 @@ from PIL import Image
 import time
 from threading import Thread
 from hawklib import *
-sys.path.append(os.path.expanduser("~/.hawk/scripts/"))
-
-#load general settings
-#default settings
-__pipe_name__ = "vision"
-team_number = 0
-width = 160
-height = 120
-fps = 30
-cameras = []
-grip_pipe = None
-prev,nex,conf,pt,done = False,False,False,False,False
-#paths
-__config_path__ = os.path.expanduser('~') + '/.hawk'
-# PSEYE camera settings
-os.system("v4l2-ctl -c exposure=6")
-os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
-#networking
-__instance__ = NetworkTablesInstance.getDefault()
-__instance__.startClientTeam(team_number)
-__pipeline__ = NetworkTables.getTable(__pipe_name__)
-NetworkTables.initialize()
-camera_server = CameraServer.getInstance()
-HOST = socket.gethostname()
-TCP_IP = socket.gethostbyname(HOST)
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind((TCP_IP, 5000))
-
-#region funcrions
-def processor(pic,contours, pipeline, prolonged):
-  pass
-def error(exception, pipeline):
-  pass
+import processor as proc
+import mlgrip
+import time
+#region functions
 def __get_ports__():
 	ports = []
 	for i in range(0, 100):
@@ -128,6 +80,7 @@ def process_Init():
                   with open("/root/.hawk/pipelines/grip_" + (counter * 'i') + '.py') as grip_file:
                     exec("".join(i for i in grip_file.readlines()))
                     grip_pipe = eval('GripPipeline()')
+                  os.system("reboot")
             ##get image from original 
             pic = cap1.read()[1]
             cv2.cvtColor(pic,84)
@@ -143,6 +96,7 @@ def process_Init():
 def changed_vals(val):
   print('\n' + val)
   if not val: return
+  print(val)
   global prev,nex,conf,pt,done
   if val == "PREV":
     prev = True
@@ -160,55 +114,79 @@ def changed_vals(val):
     Done = True
     return
 def checkProcessInit():
-  s.settimeout(0.01)
-  data = s.recvfrom(1024)[0] 
-  encoding = 'utf-8'
-  data = data.decode(encoding)
-  if data == "START":
-    process_Init()
-#endregion
-
-
-
-try:
-  with open(__config_path__ + '/config.json', 'r') as file:
-    config = json.loads(file.read())
-    team_number = config['team_number']
-    width = config['width']
-    height = config['height']
-    fps = config['fps']
-    __pipe_name__ = config['pipe_name']
-except Exception as e:
-  print("Error loading config")
-  print(e)
-
-if __name__ == "__main__":
-  for index, id in enumerate(__get_ports__()):
-    cameras.append(__get_cap__(id, index))
-  cameras[0].setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
-
-
-  __index__ = int(__pipeline__.getNumber('cap_number', 1))
-  __image__ = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
-  try:
-    #loads grip pipeline and user script
-    with open(__config_path__ + '/grips/' + config['grip_file']) as grip_file:
-      exec("".join(i for i in grip_file.readlines()))
-      grip_pipe = eval('GripPipeline()')
-    with open(__config_path__ + '/scripts/' + config['script_file']) as script_file:
-      exec("".join(i for i in script_file.readlines())) 
-  except Exception as e:
-    print("error loading grip file or user script")
-    print(e)
-
-  #start check for process init start    
-  while True:
     try:
-                  __index__ = int(__pipeline__.getNumber('cap_number', 1)) #when connected to a robot, change 1 to -1        
-                  if __index__ != -1:   
-                          __image__ = get_video(__index__, __image__)
-                          grip_pipe.process(__image__)
-                  processor(image, grip_pipe.filter_contours_output or [])
+      s.settimeout(0.0001)
+      data = s.recvfrom(1024)[0] 
+      encoding = 'utf-8'
+      data = data.decode(encoding)
+      if data == "START":
+        process_Init()
+    except: 
+      pass  
+def error(e, pipeline):
+  print(e)
+  pipeline.putBoolean("valid", False)
+#endregion
+if __name__ == "__main__":
+    #region init
+    __pipe_name__ = "vision"
+    team_number = 0
+    width = 160
+    height = 120
+    fps = 30
+    cameras = []
+    prev,nex,conf,pt,done = False,False,False,False,False
+    os.system("rm -f ~/output.txt") # delete!
+    #paths
+    __config_path__ = os.path.expanduser('~') + '/.hawk'
+    # PSEYE camera settings
+    os.system("v4l2-ctl -c exposure=6")
+    os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
+    #networking
+    __instance__ = NetworkTablesInstance.getDefault()
+    __instance__.startClientTeam(team_number)
+    __pipeline__ = NetworkTables.getTable(__pipe_name__)
+    NetworkTables.initialize()
+    camera_server = CameraServer.getInstance()
+    HOST = socket.gethostname()
+    TCP_IP = socket.gethostbyname(HOST)
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind((TCP_IP, 5000))
+    (Thread(checkProcessInit())).start()
+    #endregion
+    try: #load JSON settings file
+        with open(__config_path__ + '/config.json', 'r') as file:
+            config = json.loads(file.read())
+            team_number = config['team_number']
+            width = config['width']
+            height = config['height']
+            fps = config['fps']
+            __pipe_name__ = config['pipe_name']
     except Exception as e:
-                  error(e, __pipeline__)
+        print("Error loading config")
+        print(e)
+    
+    for index, id in enumerate(__get_ports__()): #load Camera, can take a while!
+        cameras.append(__get_cap__(id, index))
+    cameras[0].setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
 
+    __index__ = int(__pipeline__.getNumber('cap_number', 1))
+    img = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8) #black picture array
+
+    #load GRIP
+    gripScript = mlgrip.GripPipeline()
+    while True:
+        try:
+            __index__ = 0 #int(__pipeline__.getNumber('cap_number', 1)) #when connected to a robot, change 1 to -1
+            t = time.time()        
+            if __index__ != -1:   
+                    __image__ = get_video(__index__, img)
+                    gripScript.process(__image__)
+            #print(gripScript.filter_contours_output,end = " ")
+            proc.processor(__image__, gripScript.filter_contours_output or [],__pipeline__)
+            print("\nseconds: " + str(time.time() - t))
+        except Exception as e:
+                    error(e, __pipeline__)
+
+
+    
