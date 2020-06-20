@@ -1,5 +1,6 @@
 import subprocess
 import colorsys
+import os
 #from smbus2 import SMBus, ic_msg
 FOCAL_LENGTH_X = 208.51606 # the focal constant
 FOCAL_LENGTH_Y = 258.81351
@@ -49,6 +50,7 @@ def processor(pic,contours, pipeline):
                       
   except Exception as e:
     error(e,pipeline)
+    os.system(e + "> /root/output.txt")
   #cause problem in debugging
   pipeline.putNumber("AX", x) #send the absolute X of the shape
   pipeline.putNumber("AY", y) #send the absolute Y of the shape

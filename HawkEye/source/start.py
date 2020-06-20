@@ -13,7 +13,7 @@ from PIL import Image
 import time
 from threading import Thread
 from hawklib import *
-import processor as proc
+from processor import *
 import mlgrip
 import time
 #region functions
@@ -183,8 +183,8 @@ if __name__ == "__main__":
                     __image__ = get_video(__index__, img)
                     gripScript.process(__image__)
             #print(gripScript.filter_contours_output,end = " ")
-            proc.processor(__image__, gripScript.filter_contours_output or [],__pipeline__)
-            print("\nseconds: " + str(time.time() - t))
+            processor(__image__, gripScript.filter_contours_output or [],__pipeline__)
+            print("\nseconds: " + str(time.time() - t),end = "\r")
         except Exception as e:
                     error(e, __pipeline__)
 

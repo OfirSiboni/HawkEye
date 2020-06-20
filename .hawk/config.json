@@ -1,1 +1,1 @@
-{"grip_file": "grip_i.py", "script_file": "processor.py", "pipe_name": "vision", "team_number": 1577, "width": 640, "height": 480, "fps": 30}
+{"grip_file": "grip_i.py","script_file": "processor.py","pipe_name":"vision","team_number":1577,"width":320,"height":240,"fps":187}

@@ -5,12 +5,12 @@ sys.path.append('/root/.hawk/grips/')
 from mlgrip import GripPipeline
 
 
-selectedSVcluster = []
+selectedHVcluster = []
 Hcluster = [] #hue cluster
 Scluster = [] #saturation cluster
 Vcluster = [] #value cluster
 
-with open("/root/.hawk/datasets/SV.txt","r+") as SV: #only Saturation and Value
+with open("/root/.hawk/datasets/SV.txt","r+") as SV: #only Hue and Value
     for line in open("/root/.hawk/datasets/hsv.txt"):
         Hcluster.append(float(line.partition(" ")[0]))
         if line.strip():
@@ -35,7 +35,7 @@ for i in range(len(labels)): #collect all biggest cluster points
     if(labels[i] == mostCommon):
         selectedSVcluster.append(dataset[i])
 
-for i in range(len(selectedSVcluster)): # seperate them into Saturation and Value arrays
+for i in range(len(selectedSVcluster)): # seperate them into H and Value arrays
     selected = selectedSVcluster[i]
     Scluster.append(selected[0])
     Vcluster.append(selected[1])

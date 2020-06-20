@@ -23,7 +23,6 @@ import numpy
 import math
 
 EPSILON_SCALER_CONSTANT = 0.075
-
 #these are just wrapper functions for opencv function to simplify the usage
 
 #get the angle of the bounding elipse's axis and perform atan on it
