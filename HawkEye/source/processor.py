@@ -53,9 +53,8 @@ def processor(pic,contours, pipeline,h = 160,w = 120):
       fixedhsvcolor.append(round(hsvcolor[0]*360,0)) #(also the next 2 lines) convert HSV from decimal to presentable HSV color
       fixedhsvcolor.append(round(hsvcolor[1]*100,0))
       fixedhsvcolor.append(round(hsvcolor[2]*100,0))
-      #os.system("echo '{0} {1} {2}\n' >> /root/.hawk/datasets/hsv.txt".format(fixedhsvcolor[0],fixedhsvcolor[2],fixedhsvcolor[1]))
       os.system("bash /root/HawkEye/scripts/addToHSV.sh '{0} {1} {2}' '{1} {2}'".format(fixedhsvcolor[0],fixedhsvcolor[2],fixedhsvcolor[1]))
-      input("bgr: {0} , hsv: {1}, hsvnot: {2}".format(color,fixedhsvcolor,hsvcolor))
+      #input("bgr: {0} , hsv: {1}, hsvnot: {2}".format(color,fixedhsvcolor,hsvcolor)) #for debugging perposes
                            
   except Exception as e:
     error(e,pipeline)
@@ -74,8 +73,9 @@ def processor(pic,contours, pipeline,h = 160,w = 120):
 	
 
 def error(exception, pipeline):
+	print("error: " + str(exception))
 	#print error code
-	input(exception)
+	#input(exception)
 	pipeline.putBoolean("valid", False)
   
 

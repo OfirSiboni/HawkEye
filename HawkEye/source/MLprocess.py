@@ -61,11 +61,11 @@ try:
     grip_pipe = GripPipeline()
     grip_pipe.__init__()
     grip_pipe.setHSV(H= [_minHue_,_maxHue_],S = [_minSat_,_maxSat_],V = [_minVal_,_maxVal_])
-    print(grip_pipe.getHSV())
+    #print(grip_pipe.getHSV()) for debugging perposes
 except Exception as e:
     print("Setup values Error!")
     print(e)
 
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     print(f'{_minHue_}  {_maxHue_}  {_minSat_}  {_maxSat_}  {_minSat_}  {_maxSat_}  {_minVal_}  {_maxVal_}')

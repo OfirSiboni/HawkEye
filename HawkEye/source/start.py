@@ -1,3 +1,9 @@
+'''
+this file is part of HawkEYE and protected by MIT licence.
+made by Ofir Siboni at 4/2020
+'''
+
+
 #!/usr/bin/python3
 import sys
 import os
@@ -42,7 +48,7 @@ def get_video(index, image):
   return camera_server.getVideo(camera=cameras[index]).grabFrame(image)[1]
 def process_Init():
     global prev,nex,conf,pt,done
-    
+
     s_time = time.time()
     counter = 1
     source = cscore.CvSource("conf_stream",cscore.VideoMode(cscore.VideoMode.PixelFormat(cscore.VideoMode.PixelFormat.kMJPEG),width,height,fps))
