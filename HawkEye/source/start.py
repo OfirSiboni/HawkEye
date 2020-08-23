@@ -33,8 +33,15 @@ def __get_ports__():
 		else:
 			cap.release()
 	return ports
+<<<<<<< Updated upstream
 def __get_cap__(id, index):
   _camera_ = camera_server.startAutomaticCapture(dev=id, return_server=False)
+=======
+
+
+def __get_cap__(id, index,cam):
+  _camera_ = cam.startAutomaticCapture(dev=id, return_server=False)
+>>>>>>> Stashed changes
   try:
     with open(__config_path__ + '/cameras/' + str(index) + '.json') as json_file:
       _camera_.setConfigJson("".join(i for i in json_file.readlines()))
@@ -44,8 +51,18 @@ def __get_cap__(id, index):
   _camera_.setFPS(fps)
   _camera_.setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
   return _camera_
+<<<<<<< Updated upstream
 def get_video(index, image):
   return camera_server.getVideo(camera=cameras[index]).grabFrame(image)[1]
+=======
+black_img = numpy.zeros(shape=(320, 240, 3), dtype=numpy.uint8)  
+def get_video(index, image):
+  obj = camera_server.getVideo(camera=cameras[0]).grabFrame(image)
+  if obj[0] == 0:
+    return black_img
+  return obj[1]
+ 
+>>>>>>> Stashed changes
 def process_Init():
     global prev,nex,conf,pt,done
 
@@ -99,6 +116,10 @@ def process_Init():
               print(str(prev) + ' ' + str(nex) + ' ' + str(conf) + ' ' + str(pt) + ' ' + str(done))
         except Exception as e:
           print(e)
+<<<<<<< Updated upstream
+=======
+ 
+>>>>>>> Stashed changes
 def changed_vals(val):
   print('\n' + val)
   if not val: return
@@ -119,6 +140,10 @@ def changed_vals(val):
   if val == "DONE":
     Done = True
     return
+<<<<<<< Updated upstream
+=======
+ 
+>>>>>>> Stashed changes
 def checkProcessInit():
     try:
       s.settimeout(0.0001)
@@ -133,6 +158,7 @@ def error(e, pipeline):
   print(e)
   pipeline.putBoolean("valid", False)
 #endregion
+<<<<<<< Updated upstream
 if __name__ == "__main__":
     #region init
     __pipe_name__ = "vision"
@@ -160,6 +186,39 @@ if __name__ == "__main__":
     s.bind((TCP_IP, 5000))
     (Thread(checkProcessInit())).start()
     #endregion
+=======
+
+#region init
+__pipe_name__ = "vision"
+team_number = 0
+width = 320
+height = 240
+fps = 75
+cameras = []
+prev,nex,conf,pt,done = False,False,False,False,False
+os.system("rm -f ~/output.txt") # delete!
+#paths
+__config_path__ = os.path.expanduser('~') + '/.hawk'
+# PSEYE camera settings
+os.system("v4l2-ctl -c exposure=6")
+os.system("v4l2-ctl --set-fmt-video=width=160,height=120,pixelformat=BGR")
+#networking
+__instance__ = NetworkTablesInstance.getDefault()
+__instance__.startClientTeam(team_number)
+__pipeline__ = NetworkTables.getTable(__pipe_name__)
+NetworkTables.initialize()
+camera_server = CameraServer.getInstance()
+''' uncomment if you use the HawkEYE client
+HOST = socket.gethostname()
+TCP_IP = socket.gethostbyname(HOST)
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.bind((TCP_IP, 5000))
+(Thread(checkProcessInit())).start()
+'''
+#endregion
+    
+def main():
+>>>>>>> Stashed changes
     try: #load JSON settings file
         with open(__config_path__ + '/config.json', 'r') as file:
             config = json.loads(file.read())
@@ -173,26 +232,33 @@ if __name__ == "__main__":
         print(e)
     
     for index, id in enumerate(__get_ports__()): #load Camera, can take a while!
-        cameras.append(__get_cap__(id, index))
+        cameras.append(__get_cap__(id, index,camera_server))
     cameras[0].setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
 
     __index__ = int(__pipeline__.getNumber('cap_number', 1))
-    img = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8) #black picture array
+    #black picture array
 
     #load GRIP
     gripScript = mlgrip.GripPipeline()
     while True:
         try:
-            __index__ = 0 #int(__pipeline__.getNumber('cap_number', 1)) #when connected to a robot, change 1 to -1
-            t = time.time()        
+            __image__ =numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)  
+            __index__ = int(__pipeline__.getNumber('cap_number', 1)) #when connected to a robot, change 1 to -1
+            t = time.process_time()    
             if __index__ != -1:   
-                    __image__ = get_video(__index__, img)
+                    __image__ = get_video(__index__, __image__)
                     gripScript.process(__image__)
-            #print(gripScript.filter_contours_output,end = " ")
             processor(__image__, gripScript.filter_contours_output or [],__pipeline__)
-            print("\nseconds: " + str(time.time() - t),end = "\r")
+            print((time.process_time() - t),end = "\r")
+            
         except Exception as e:
+                    exc_type,exc_obj,exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type,fname,exc_tb.tb_lineno)
                     error(e, __pipeline__)
+                    
 
 
     
+if __name__ == "__main__":
+  main()

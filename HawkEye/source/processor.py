@@ -1,6 +1,6 @@
 import subprocess
 import colorsys
-import os
+import os,sys
 from hawklib import *
 #from smbus2 import SMBus, ic_msg
 FOCAL_LENGTH_X = 208.51606 # the focal constant
@@ -35,8 +35,7 @@ def processor(pic,contours, pipeline,h = 160,w = 120):
 	
   area = contour_area(selected)
   per = contour_perimeter(selected)
-  print(x, y, area,per)
-  print("angle ", angle)
+  print(x, y, area, per ,angle, end="/r")
 
   #send to file
 
@@ -47,13 +46,13 @@ def processor(pic,contours, pipeline,h = 160,w = 120):
       counter+=1
     if counter > 9:
       counter = 0
-      color = pic[int(data[0]),int(data[1])]
+      color = pic[int(len(pic) if data[0] > len(pic) else data[0]),int(data[1])]
       hsvcolor = colorsys.rgb_to_hsv(color[2]/256,color[1]/256,color[0]/256)
       fixedhsvcolor = []
       fixedhsvcolor.append(round(hsvcolor[0]*360,0)) #(also the next 2 lines) convert HSV from decimal to presentable HSV color
       fixedhsvcolor.append(round(hsvcolor[1]*100,0))
       fixedhsvcolor.append(round(hsvcolor[2]*100,0))
-      os.system("bash /root/HawkEye/scripts/addToHSV.sh '{0} {1} {2}' '{1} {2}'".format(fixedhsvcolor[0],fixedhsvcolor[2],fixedhsvcolor[1]))
+      os.system("bash /root/HawkEye/HawkEye/scripts/addToHSV.sh '{0} {1} {2}' '{1} {2}'".format(fixedhsvcolor[0],fixedhsvcolor[2],fixedhsvcolor[1]))
       #input("bgr: {0} , hsv: {1}, hsvnot: {2}".format(color,fixedhsvcolor,hsvcolor)) #for debugging perposes
                            
   except Exception as e:
@@ -74,8 +73,6 @@ def processor(pic,contours, pipeline,h = 160,w = 120):
 
 def error(exception, pipeline):
 	print("error: " + str(exception))
-	#print error code
-	#input(exception)
 	pipeline.putBoolean("valid", False)
   
 
