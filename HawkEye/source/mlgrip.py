@@ -1,6 +1,10 @@
 import cv2
 import numpy
 import math
+<<<<<<< Updated upstream
+=======
+import sys, os
+>>>>>>> Stashed changes
 from enum import Enum
 
 class GripPipeline:
@@ -12,9 +16,9 @@ class GripPipeline:
         """initializes all values to presets or None if need to be set
         """
 
-        self.__hsv_threshold_hue = [39.0, 111.0]
-        self.__hsv_threshold_saturation = [64.0, 131.0]
-        self.__hsv_threshold_value = [0.0, 92.0]
+        self.__hsv_threshold_hue = [47, 180.0]
+        self.__hsv_threshold_saturation = [126.0, 255.0]
+        self.__hsv_threshold_value = [78.0, 219.0]
 
         self.hsv_threshold_output = None
 
@@ -24,7 +28,7 @@ class GripPipeline:
         self.find_contours_output = None
 
         self.__filter_contours_contours = self.find_contours_output
-        self.__filter_contours_min_area = 600
+        self.__filter_contours_min_area = 60
         self.__filter_contours_min_perimeter = 0
         self.__filter_contours_min_width = 0
         self.__filter_contours_max_width = 1000
@@ -44,7 +48,12 @@ class GripPipeline:
         self.__hsv_threshold_value = V
     def getHSV(self):
         return  self.__hsv_threshold_hue + self.__hsv_threshold_saturation + self.__hsv_threshold_value
+<<<<<<< Updated upstream
+=======
+    
+>>>>>>> Stashed changes
     def process(self, source0):
+      try:
         """
         Runs the pipeline and sets all outputs to new values.
         """
@@ -59,7 +68,10 @@ class GripPipeline:
         # Step Filter_Contours0:
         self.__filter_contours_contours = self.find_contours_output
         (self.filter_contours_output) = self.__filter_contours(self.__filter_contours_contours, self.__filter_contours_min_area, self.__filter_contours_min_perimeter, self.__filter_contours_min_width, self.__filter_contours_max_width, self.__filter_contours_min_height, self.__filter_contours_max_height, self.__filter_contours_solidity, self.__filter_contours_max_vertices, self.__filter_contours_min_vertices, self.__filter_contours_min_ratio, self.__filter_contours_max_ratio)
-
+      except Exception as e:
+                    exc_type,exc_obj,exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type,fname,exc_tb.tb_lineno)
 
     @staticmethod
     def __hsv_threshold(input, hue, sat, val):
@@ -113,30 +125,38 @@ class GripPipeline:
         Returns:
             Contours as a list of numpy.ndarray.
         """
-        output = []
-        for contour in input_contours:
-            x,y,w,h = cv2.boundingRect(contour)
-            if (w < min_width or w > max_width):
-                continue
-            if (h < min_height or h > max_height):
-                continue
-            area = cv2.contourArea(contour)
-            if (area < min_area):
-                continue
-            if (cv2.arcLength(contour, True) < min_perimeter):
-                continue
-            hull = cv2.convexHull(contour)
-            solid = 100 * area / cv2.contourArea(hull)
-            if (solid < solidity[0] or solid > solidity[1]):
-                continue
-            if (len(contour) < min_vertex_count or len(contour) > max_vertex_count):
-                continue
-            ratio = (float)(w) / h
-            if (ratio < min_ratio or ratio > max_ratio):
-                continue
-            output.append(contour)
-        return output
-
+        try:
+          output = []
+          for contour in input_contours:
+              x,y,w,h = cv2.boundingRect(contour)
+              if (w < min_width or w > max_width):
+                  continue
+              if (h < min_height or h > max_height):
+                  continue
+              area = cv2.contourArea(contour)
+              if (area < min_area):
+                  continue
+              if (cv2.arcLength(contour, True) < min_perimeter):
+                  continue
+              hull = cv2.convexHull(contour)
+              solid = 0
+              try:
+                solid = 100 * area / cv2.contourArea(hull) == 0
+              except:
+                solid = 0
+              if (solid < solidity[0] or solid > solidity[1]):
+                  continue
+              if (len(contour) < min_vertex_count or len(contour) > max_vertex_count):
+                  continue
+              ratio = (float)(w) / h
+              if (ratio < min_ratio or ratio > max_ratio):
+                  continue
+              output.append(contour)
+          return output
+        except Exception as e:
+                    exc_type,exc_obj,exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type,fname,exc_tb.tb_lineno)
 
 
 

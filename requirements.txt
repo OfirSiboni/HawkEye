@@ -4,3 +4,4 @@ robotpy-cscore
 paramiko
 pynetworktables
 pillow
+numba
