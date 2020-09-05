@@ -16,7 +16,7 @@ To get started, you need to have these requirements:
   2. Install all the [require pip packages](requirements.txt)
   3. fetch the last version of HawkEYE(NOTE: if there is still no public version, you can download the last commit)
   4. Download the last version of [HawkEYE Client For Windows](https://github.com/OfirSiboni/HawkEYE-Client/releases) for your computer.
-  5. You are done! you can run HawkEYE freely and change it for your use. Run using `python3 ~/HawkEYE/source/main.py`
+  5. You are done! you can run HawkEYE freely and change it for your use. Run using `bash hawkeye` to run the `hawkeye.sh` file to run hawkeye properly.
 ## Usage instructions
 HawkEYE's usage is very simple. Once you run the `main.py` file, you can browse to `yourIP:1181`(Default is `192.168.1.6:1181`) and you can see camera input and control.
 To manage your HawkEYE system and change it's system options, you need to download HawkEYE client(currently only for Windows, More versions will come up later.)
