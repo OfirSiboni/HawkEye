@@ -23,18 +23,29 @@ from processor import *
 import mlgrip
 import time
 #region functions
-def __get_ports__():
-	ports = []
-	for i in range(0, 100):
-		cap = cv2.VideoCapture(i)
+def checkPortRange(ports, start,end):
+  for i in range(start,end):
+    cap = cv2.VideoCapture(i)
 		if cap.read()[0]:
 			cap.release()
 			ports.append(i)
 		else:
 			cap.release()
+      
+def __get_ports__():
+	ports = []
+	for i in range(0, 7):
+		threading.Thread(target=findPortRange, args=(ports,15*i,15*(i+1)).start()
 	return ports
+def __get_cap__(id,index):
   _camera_ = camera_server.startAutomaticCapture(dev=id, return_server=False)
   try:
+    with open(__config_path__ + '/cameras/' + str(index) + '.json') as json_file:
+      _camera_.setConfigJson("".join(i for i in json_file.readlines()))
+  except:
+    print("no json file for camera number " + str(id))
+  _camera_.setResolution(width, height)
+  _camera_.setFPS(fps)
   _camera_.setPixelFormat(cscore.VideoMode.PixelFormat.kYUYV)
   return _camera_
 black_img = numpy.zeros(shape=(320, 240, 3), dtype=numpy.uint8)  
@@ -126,7 +137,9 @@ def checkProcessInit():
       if data == "START":
         process_Init()
     except: 
-      pass  
+      pass
+
+    
 def error(e, pipeline):
   print(e)
   pipeline.putBoolean("valid", False)
@@ -193,6 +206,7 @@ def main():
                     __image__ = get_video(__index__, __image__)
                     gripScript.process(__image__)
             processor(__image__, gripScript.filter_contours_output or [],__pipeline__)
+            
         except Exception as e:
                     exc_type,exc_obj,exc_tb = sys.exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
